@@ -1,6 +1,7 @@
 """
 TO TEST:
     bid/asks executed at equal price?
+    market orders
 """
 import pytest
 
@@ -154,57 +155,9 @@ def test_ask_insufficient_balance(testOrderbook):
 def test_bid_insufficient_balance(testOrderbook):
     assert 1
 
-# suite level setup and teardown
-#@pytest.fixture(scope="session", autouse=True)
-#def start_xvfb_server (request):
-#    tempdir = tempfile.mkdtemp()
-#    xvfb_cmd = ['Xvfb',
-#                ':1022',
-#                '-screen', '0', '800x600x24',
-#                '-fbdir', tempdir,
-#                '-noreset'
-#    ]
-#    xvfb_proc = subprocess.Popen(xvfb_cmd,
-#            stdout=open(os.devnull),
-#            stderr=open(os.devnull),
-#            shell=False
-#    )
-#    request.addfinalizer(xvfb_proc.kill)
+def test_cancel_bid(testOrderbook):
+    assert 1
 
-#class TestClass:
-#    def test_answer(self):
-#        assert True
-#
-#def test_answer2():
-#    assert True
-#
-#def setup_method(self, method):
-#    """ setup any state tied to the execution of the given method in a
-#    class.  setup_method is invoked for every test method of a class.
-#    """
-#    print 'setup_method', method
-#
-#def teardown_method(self, method):
-#    """ teardown any state that was previously setup with a setup_method
-#    call.  """
-#    print 'teardown_method', method
-#
-#def setup_module(module):
-#    """ setup any state specific to the execution of the given module."""
-#    print 'setup_module'
-#
-#def teardown_module(module):
-#    """ teardown any state that was previously setup with a setup_module
-#    method.  """
-#    print 'teardown_module'
-#
-#def setup_function(function):
-#    """ setup any state tied to the execution of the given function.
-#    Invoked for every test function in the module.
-#    """
-#    print 'setup_function', function
-#
-#def teardown_function(function):
-#    """ teardown any state that was previously setup with a setup_function
-#    call.  """
-#    print 'teardown_function', function
+def test_cancel_ask(testOrderbook):
+    assert 1
+

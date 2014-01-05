@@ -1,7 +1,8 @@
 The MIT License (MIT)
+=====================
 
-Copyright (c) 2012 Ash Booth
-Copyright (c) 2013 Christoph Devenoges
+ - Copyright (c) 2012 Ash Booth
+ - Copyright (c) 2013 Christoph Devenoges
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,4 +22,4 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
--- http://opensource.org/licenses/MIT
+-- [MIT Licence](http://opensource.org/licenses/MIT)

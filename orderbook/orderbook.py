@@ -31,8 +31,6 @@ class Order(object):
         for order in orderlist:
             if qtyToTrade <= 0:
                 break
-            tradedPrice = order.price
-            counterparty = order.traderId
             if qtyToTrade < order.qty:
                 tradedQty = qtyToTrade
                 # Amend book order
@@ -53,12 +51,12 @@ class Order(object):
                 # continue processing volume at this price
                 qtyToTrade -= tradedQty
 
-            transactionRecord = {'timestamp': book.getTimestamp(), 'price': tradedPrice, 'qty': tradedQty}
+            transactionRecord = {'timestamp': book.getTimestamp(), 'price': order.price, 'qty': tradedQty}
             if tree.side == 'bid':
-                transactionRecord['party1'] = [counterparty, 'bid', order.orderId]
+                transactionRecord['party1'] = [order.traderId, 'bid', order.orderId]
                 transactionRecord['party2'] = [self.traderId, 'ask', None]
             else:
-                transactionRecord['party1'] = [counterparty, 'ask', order.orderId]
+                transactionRecord['party1'] = [order.traderId, 'ask', order.orderId]
                 transactionRecord['party2'] = [self.traderId, 'bid', None]
             trades.append(transactionRecord)
         return qtyToTrade, trades

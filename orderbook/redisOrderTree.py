@@ -5,16 +5,14 @@ redis based order book.
 class OrderTree(object):
     def __init__(self, side, baseCurrency, quoteCurrency, red):
         self.side = side
-        self.baseCurrency = baseCurrency
-        self.quoteCurrency = quoteCurrency
         self.red = red
         #self.volume = 0     # How much volume on this side? track with INT counter per order tree
         #self.nOrders = 0   # How many orders?
         #self.lobDepth = 0  # How many different prices on lob? find using zcard and llen or cache?
 
-        self.KEY_PRICE_TREE = 'prices-%s-%s-%s' % (self.baseCurrency, self.quoteCurrency, self.side)
-        self.KEY_TEMPLATE_QUOTE = 'quote-%s-%s-%%s' % (self.baseCurrency, self.quoteCurrency) #quote id
-        self.KEY_TEMPLATE_PRICE_QUOTES = '%s-%s-%s-%%s' % (self.side, self.baseCurrency, self.quoteCurrency) #price
+        self.KEY_PRICE_TREE = 'prices-%s-%s-%s' % (baseCurrency, quoteCurrency, self.side)
+        self.KEY_TEMPLATE_QUOTE = 'quote-%s-%s-%%s' % (baseCurrency, quoteCurrency) #quote id
+        self.KEY_TEMPLATE_PRICE_QUOTES = '%s-%s-%s-%%s' % (self.side, baseCurrency, quoteCurrency) #price
 
     def __len__(self):
         return self.red.zcard(self.KEY_PRICE_TREE)

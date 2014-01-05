@@ -62,16 +62,16 @@ class Order(object):
                 transactionRecord['party2'] = [self.traderId, 'bid', None]
             trades.append(transactionRecord)
         return qtyToTrade, trades
-    
+
     def __str__(self):
         return "%s\t@\t%s\tts=%s\ttid=%s\toid=%s" % (self.qty, self.price, self.timestamp, self.traderId, self.orderId)
 
     def __repr__(self):
-        return '<%s %s @ %s tr:%s o:%s ti:%s>' % (getattr(self, 'side', 'order').capitalize(), self.qty, self.price, 
+        return '<%s %s @ %s tr:%s o:%s ti:%s>' % (getattr(self, 'side', 'order').capitalize(), self.qty, self.price,
                                                   self.traderId, self.orderId, self.timestamp)
 
 
-class Bid(Order): 
+class Bid(Order):
     def __init__(self, qty, price, traderId, timestamp=None, orderId=None):
         Order.__init__(self, qty, price, traderId, timestamp, orderId)
         self.side = 'bid'
@@ -91,6 +91,15 @@ class Bid(Order):
             bids.insertOrder(self)
             orderInBook = self
         return trades, orderInBook
+
+    def marketOrder(self, book, bids, asks):
+        trades = []
+        qtyToTrade = self.qty
+        while qtyToTrade > 0 and self.asks:
+            bestPriceAsks = [Ask(x['qty'], x['price'], x['traderId'], x['timestamp'], x['orderId']) for x in asks.minPriceList()]
+            qtyToTrade, newTrades = self.processPriceLevel(book, asks, bestPriceAsks, qtyToTrade)
+            trades += newTrades
+        return trades
 
 
 class Ask(Order):
@@ -114,9 +123,18 @@ class Ask(Order):
             orderInBook = self
         return trades, orderInBook
 
+    def marketOrder(self, book, bids, asks):
+        trades = []
+        qtyToTrade = self.qty
+        while qtyToTrade > 0 and self.bids:
+            bestPriceBids = [Bid(x['qty'], x['price'], x['traderId'], x['timestamp'], x['orderId']) for x in bids.maxPriceList()]
+            qtyToTrade, newTrades = self.processPriceLevel(book, bids, bestPriceBids, qtyToTrade)
+            trades += newTrades
+        return trades
 
-class Trade(object): 
-    def __init__(self, qty, price, timestamp, 
+
+class Trade(object):
+    def __init__(self, qty, price, timestamp,
                  p1_traderId, p1_side, p1_orderId,
                  p2_traderId, p2_side, p2_orderId):
         self.qty = qty
@@ -141,7 +159,7 @@ class OrderBook(object):
 
         self._lastTimestamp = None
         self.KEY_COUNTER_ORDER_ID = 'counter:%s-%s-orderId' % (baseCurrency, quoteCurrency)
-        
+
     def processOrder(self, order):
         orderInBook = None
 
@@ -157,13 +175,13 @@ class OrderBook(object):
         trades, orderInBook = order.limitOrder(self, self.bids, self.asks)
 
         return trades, orderInBook
-    
+
     def cancelOrder(self, side, orderId):
         if side == 'bid':
             self.bids.removeOrderById(orderId)
         elif side == 'ask':
             self.asks.removeOrderById(orderId)
-    
+
     def getBestBid(self):
         return self.bids.maxPrice()
 
@@ -175,7 +193,7 @@ class OrderBook(object):
 
     def getWorstAsk(self):
         return self.asks.maxPrice()
-    
+
     def _clipPrice(self, price):
         """ Clips the price according to the ticksize """
         return round(price, int(math.log10(1 / self.tickSize)))

@@ -40,11 +40,6 @@ class OrderTree(object):
             #self.lobDepth += 1
             self.red.zadd(self.KEY_PRICE_TREE, price, price)
 
-        #order = dict(timestamp=int(quote.timestamp),
-        #             qty=int(quote.qty),
-        #             price=price,
-        #             orderId=quote.orderId,
-        #             traderId=quote.traderId)
         self.red.hmset(self.KEY_TEMPLATE_QUOTE % order.orderId, order.__dict__)
         self.red.rpush(self.KEY_TEMPLATE_PRICE_QUOTES % price, order.orderId)
         #self.volume += quote['qty']

@@ -33,21 +33,21 @@ class Order(object):
                 break
             tradedPrice = order.price
             counterparty = order.traderId
-            if qtyToTrade < int(order.qty):
+            if qtyToTrade < order.qty:
                 tradedQty = qtyToTrade
                 # Amend book order
-                newBookQty = int(order.qty) - qtyToTrade
+                newBookQty = order.qty - qtyToTrade
                 tree.updateOrderQuantity(order.orderId, newBookQty)
                 # Incoming done with
                 qtyToTrade = 0
-            elif qtyToTrade == int(order.qty):
+            elif qtyToTrade == order.qty:
                 tradedQty = qtyToTrade
                 # hit bid or lift ask
                 tree.removeOrderById(order.orderId)
                 # Incoming done with
                 qtyToTrade = 0
             else:
-                tradedQty = int(order.qty)
+                tradedQty = order.qty
                 # hit bid or lift ask
                 tree.removeOrderById(order.orderId)
                 # continue processing volume at this price

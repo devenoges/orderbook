@@ -154,7 +154,6 @@ class OrderBook(object):
         order.timestamp = self.getTimestamp()
 
         #order['price'] = self._clipPrice(order['price'])
-        #trades, orderInBook = self._processLimitOrder(order)
         trades, orderInBook = order.limitOrder(self, self.bids, self.asks)
 
         return trades, orderInBook
@@ -190,83 +189,7 @@ class OrderBook(object):
 
     def getNextQuoteId(self):
         return self.red.incr(self.KEY_COUNTER_ORDER_ID) #defaults to 1 if not present
-    
-    def _processLimitOrder(self, quote):
-        orderInBook = None
-        trades = []
-        qtyToTrade = int(quote.qty)
-        price = int(quote.price)
 
-        if quote.side == 'bid':
-            #trades, orderInBook = quote.limitOrder(self, self.asks, self.bids)
-            while (self.asks and price >= self.asks.minPrice() and qtyToTrade > 0):
-                bestPriceAsks = self.asks.minPriceList()
-                bestPriceAsks = [Ask(x['qty'], x['price'], x['traderId'], x['timestamp'], x['orderId']) for x in bestPriceAsks]
-                qtyToTrade, newTrades = self._processPriceLevel(self.asks, bestPriceAsks, qtyToTrade, quote)
-                trades += newTrades
-            # If volume remains, add to book
-            if qtyToTrade > 0:
-                quote.orderId = self.getNextQuoteId()
-                quote.qty = qtyToTrade
-                self.bids.insertOrder(quote)
-                orderInBook = quote
-        elif quote.side == 'ask':
-            #trades, orderInBook = quote.limitOrder(self, self.bids, self.asks)
-            while (self.bids and price <= self.bids.maxPrice() and qtyToTrade > 0):
-                bestPriceBids = self.bids.maxPriceList()
-                bestPriceBids = [Bid(x['qty'], x['price'], x['traderId'], x['timestamp'], x['orderId']) for x in bestPriceBids]
-                qtyToTrade, newTrades = self._processPriceLevel(self.bids, bestPriceBids, qtyToTrade, quote)
-                trades += newTrades
-            # If volume remains, add to book
-            if qtyToTrade > 0:
-                quote.orderId = self.getNextQuoteId()
-                quote.qty = qtyToTrade
-                self.asks.insertOrder(quote)
-                orderInBook = quote
-        return trades, orderInBook
-
-    def _processPriceLevel(self, tree, orderlist, qtyToTrade, quote):
-        '''
-        Takes an price level order list and an incoming order and matches
-        appropriate trades given the orders quantity.
-        '''
-        trades = []
-        for order in orderlist:
-            if qtyToTrade <= 0:
-                break
-            tradedPrice = order.price
-            counterparty = order.traderId
-            if qtyToTrade < int(order.qty):
-                tradedQty = qtyToTrade
-                # Amend book order
-                newBookQty = int(order.qty) - qtyToTrade
-                tree.updateOrderQuantity(order.orderId, newBookQty)
-                # Incoming done with
-                qtyToTrade = 0
-            elif qtyToTrade == int(order.qty):
-                tradedQty = qtyToTrade
-                # hit bid or lift ask
-                tree.removeOrderById(order.orderId)
-                # Incoming done with
-                qtyToTrade = 0
-            else:
-                tradedQty = int(order.qty)
-                # hit bid or lift ask
-                tree.removeOrderById(order.orderId)
-                # continue processing volume at this price
-                qtyToTrade -= tradedQty
-
-            transactionRecord = {'timestamp': self.getTimestamp(), 'price': tradedPrice, 'qty': tradedQty}
-            if tree.side == 'bid':
-                transactionRecord['party1'] = [counterparty, 'bid', order.orderId]
-                transactionRecord['party2'] = [quote.traderId, 'ask', None]
-            else:
-                transactionRecord['party1'] = [counterparty, 'ask', order.orderId]
-                transactionRecord['party2'] = [quote.traderId, 'bid', None]
-            self.tape.append(transactionRecord)
-            trades.append(transactionRecord)
-        return qtyToTrade, trades
-    
     def __str__(self):
         fileStr = StringIO()
         #fileStr.write('Bid vol: %s Ask vol: %s\n' % (self.bids.volume, self.asks.volume))
